@@ -88,9 +88,8 @@ ncol(countries)
 #| echo: TRUE
 regions <- read.table("../data/raw/regions.txt", header = TRUE)
 nrow(regions)
-ncol(regions)
 ```
-*There are 249 regions in the dataset*
+*There are 249 countries in the dataset*
 
 
 
