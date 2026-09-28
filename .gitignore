@@ -1,0 +1,11 @@
+# Python & R environments
+.venv/
+__pycache__/
+.Rproj.user/
+.Rhistory
+
+# Data files (Don't track large files!)
+*.csv
+*.xlsx
+*.parquet
+data/
