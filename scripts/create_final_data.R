@@ -74,9 +74,9 @@ disaster_df <- disaster_df |> select(year, iso, earthquake, drought)
 
 conflict_df <- read_csv("data/raw/conflict.csv")
 conflict_df <- conflict_df |> group_by(iso, year) |> 
-  summarise(cumulative_cum = sum(best, na.rm = TRUE))
-conflict_df <- conflict_df |> mutate(armed_conflict = case_when(cumulative_cum >= 25 ~ 1,
-cumulative_cum < 25 ~ 0,
+  summarise(cumulative_conflict = sum(best, na.rm = TRUE))
+conflict_df <- conflict_df |> mutate(armed_conflict = case_when(cumulative_conflict >= 25 ~ 1,
+cumulative_conflict < 25 ~ 0,
 TRUE ~ NA_real_))
 conflict_df <- conflict_df |> mutate(year = year + 1)
 

@@ -1,4 +1,4 @@
-iso,year,cumulative_cum,armed_conflict,earthquake,drought,infant_mortality,maternal_mortality,neonatal_mortality,under5_mortality
+iso,year,cumulative_conflict,armed_conflict,earthquake,drought,infant_mortality,maternal_mortality,neonatal_mortality,under5_mortality
 AFG,2000,5065,1,0,1,90.5,1450,60.9,129.2
 AFG,2001,5394,1,1,0,87.9,1390,59.7,125.2
 AFG,2001,5394,1,1,0,87.9,1390,59.7,125.2
