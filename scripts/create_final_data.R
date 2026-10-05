@@ -82,10 +82,16 @@ conflict_df <- conflict_df |> mutate(year = year + 1)
 
 # Merge All Data and Save -------------------------------------------------------
 
-merge1 <- merge(conflict_df, disaster_df, by = c("iso", "year"))
-merge2 <- merge(merge1, infant_mortalitydflong, by = c("iso", "year"))
-merge3 <- merge(merge2, maternal_mortalitydflong, by = c("iso", "year"))
-merge4 <- merge(merge3, neonatal_mortalitydflong, by = c("iso", "year"))
-final_data <- merge(merge4, under5_mortalitydflong, by = c("iso", "year"))
+data_list <- list(
+  conflict_df,
+  disaster_df,
+  infant_mortalitydflong,
+  maternal_mortalitydflong,
+  neonatal_mortalitydflong,
+  under5_mortalitydflong
+)
+
+final_data <- Reduce(function(x, y) merge(x, y, by = c("iso", "year")), data_list)
+final_data <- final_data[!duplicated(final_data), ]
 
 write_csv(final_data, file = "data/processed/final_data.csv")
