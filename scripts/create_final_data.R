@@ -57,18 +57,17 @@ under5_mortalitydflong <- converting_wblong(under5_mortalitydf, "under5_mortalit
 
 disaster_df <- read_csv("data/raw/disaster.csv")
 disaster_df <- clean_names(disaster_df)
-disaster_df <- disaster_df |> filter(year %in% c(2000:2019)) |> 
-  filter(disaster_type %in% c("Earthquake", "Drought"))
-disaster_df <- disaster_df |> select(year, iso, disaster_type)
-disaster_df <- disaster_df |> mutate(drought = case_when(
-  disaster_type == "Drought" ~ 1,
-  TRUE ~ 0
-),
-earthquake = case_when(
-  disaster_type == "Earthquake" ~ 1,
-  TRUE ~ 0
-))
-disaster_df <- disaster_df |> select(year, iso, earthquake, drought)
+disaster_df <- disaster_df |>
+  filter(year >= 2000 & year <= 2019) |>
+  filter(disaster_type %in% c("Earthquake", "Drought")) |>
+  select(year, iso, disaster_type) |>
+  group_by(year, iso) |>
+  mutate(drought0 = ifelse(disaster_type == "Drought", 1, 0),
+         earthquake0 = ifelse(disaster_type == "Earthquake", 1, 0)) |>
+  summarize(drought = max(drought0),
+            earthquake = max(earthquake0)) |> 
+  ungroup() |>
+  arrange(iso, year)
 
 # Prepare Conflict Data ---------------------------------------------------------
 
@@ -86,17 +85,14 @@ covariates_df <- read_csv("data/raw/covariates.csv")
 
 # Merge All Data and Save -------------------------------------------------------
 
-data_list <- list(
-  conflict_df,
-  disaster_df,
-  infant_mortalitydflong,
-  maternal_mortalitydflong,
-  neonatal_mortalitydflong,
-  under5_mortalitydflong,
-  covariates_df
-)
-
-final_data <- Reduce(function(x, y) merge(x, y, by = c("iso", "year")), data_list)
-final_data <- final_data[!duplicated(final_data), ]
+final_data <- maternal_mortalitydflong |>
+  left_join(infant_mortalitydflong, by = c("iso", "year")) |>
+  left_join(neonatal_mortalitydflong, by = c("iso", "year")) |>
+  left_join(under5_mortalitydflong, by = c("iso", "year")) |>
+  left_join(conflict_df, by = c("iso", "year")) |>
+  left_join(disaster_df, by = c("iso", "year")) |>
+  left_join(covariates_df, by = c("iso", "year")) |>
+  mutate(drought = coalesce(drought, 0), earthquake = coalesce(earthquake, 0), 
+armed_conflict = coalesce(armed_conflict, 0))
 
 write_csv(final_data, file = "data/processed/final_data.csv")

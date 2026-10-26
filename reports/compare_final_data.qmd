@@ -1,0 +1,166 @@
+---
+title: "Comparing the Final Armed Conflict Datasets"
+format: html
+---
+
+## Purpose
+
+This report compares `final_data.csv` with `final_data_copilot.csv`. It checks
+their country-year coverage, structure, variables, and values shared between
+the two datasets.
+
+```{r}
+#| label: setup
+library(dplyr)
+library(readr)
+library(knitr)
+
+key <- c("iso", "year")
+final_data <- read_csv("../data/processed/final_data.csv", show_col_types = FALSE)
+final_data_copilot <- read_csv(
+  "../data/processed/final_data_copilot.csv",
+  show_col_types = FALSE
+)
+
+original_keys <- final_data |> distinct(across(all_of(key)))
+copilot_keys <- final_data_copilot |> distinct(across(all_of(key)))
+common_keys <- inner_join(original_keys, copilot_keys, by = key)
+```
+
+## Dataset structure
+
+```{r}
+structure_summary <- tibble(
+  dataset = c("final_data", "final_data_copilot"),
+  rows = c(nrow(final_data), nrow(final_data_copilot)),
+  columns = c(ncol(final_data), ncol(final_data_copilot)),
+  unique_country_years = c(nrow(original_keys), nrow(copilot_keys)),
+  duplicate_rows = c(
+    nrow(final_data) - nrow(original_keys),
+    nrow(final_data_copilot) - nrow(copilot_keys)
+  )
+)
+
+kable(structure_summary, caption = "Structure of the two final datasets")
+```
+
+`final_data` has `r format(nrow(final_data), big.mark = ",")` rows but only
+`r format(nrow(original_keys), big.mark = ",")` unique country-years. Thus,
+it contains `r format(nrow(final_data) - nrow(original_keys), big.mark = ",")`
+rows beyond one row per country-year. `final_data_copilot` has one row for each
+of its `r format(nrow(copilot_keys), big.mark = ",")` country-years.
+
+```{r}
+original_multiplicity <- final_data |>
+  count(across(all_of(key)), name = "rows_per_country_year")
+
+duplicate_summary <- original_multiplicity |>
+  summarise(
+    country_years_with_duplicates = sum(rows_per_country_year > 1),
+    maximum_rows_for_one_country_year = max(rows_per_country_year)
+  )
+
+kable(duplicate_summary, caption = "Duplicate country-years in final_data")
+```
+
+## Country-year coverage
+
+```{r}
+coverage_summary <- tibble(
+  coverage = c("In both datasets", "Only in final_data", "Only in final_data_copilot"),
+  country_years = c(
+    nrow(common_keys),
+    nrow(anti_join(original_keys, copilot_keys, by = key)),
+    nrow(anti_join(copilot_keys, original_keys, by = key))
+  )
+)
+
+kable(coverage_summary, caption = "Comparison of country-year coverage")
+
+copilot_only <- anti_join(copilot_keys, original_keys, by = key)
+kable(
+  copilot_only |> count(year, name = "country_years") |> arrange(year),
+  caption = "Years represented only in final_data_copilot"
+)
+```
+
+Every country-year in `final_data` is also in `final_data_copilot`.
+The copilot dataset retains an additional
+`r nrow(anti_join(copilot_keys, original_keys, by = key))` country-years.
+
+## Variables
+
+```{r}
+variable_summary <- tibble(
+  category = c("Shared variables", "Only in final_data", "Only in final_data_copilot"),
+  variables = c(
+    paste(intersect(names(final_data), names(final_data_copilot)), collapse = ", "),
+    paste(setdiff(names(final_data), names(final_data_copilot)), collapse = ", "),
+    paste(setdiff(names(final_data_copilot), names(final_data)), collapse = ", ")
+  )
+)
+
+kable(variable_summary, caption = "Variables available in each dataset")
+```
+
+The main substantive difference is the conflict measure. `final_data_copilot`
+contains the binary `armed_conflict` indicator. `final_data` instead contains
+`conflict_id` and `best`, which retain event-level conflict information and are
+associated with its repeated country-years.
+
+## Shared values
+
+```{r}
+shared_non_key <- setdiff(intersect(names(final_data), names(final_data_copilot)), key)
+
+original_profile <- final_data |>
+  semi_join(common_keys, by = key) |>
+  group_by(across(all_of(key))) |>
+  summarise(
+    across(
+      all_of(shared_non_key),
+      list(n_values = ~ n_distinct(.x, na.rm = FALSE), value = ~ first(.x)),
+      .names = "{.col}_{.fn}"
+    ),
+    .groups = "drop"
+  )
+
+value_comparison <- lapply(shared_non_key, function(variable) {
+  compared <- original_profile |>
+    select(
+      all_of(key),
+      n_values = all_of(paste0(variable, "_n_values")),
+      original_value = all_of(paste0(variable, "_value"))
+    ) |>
+    inner_join(
+      final_data_copilot |> select(all_of(key), copilot_value = all_of(variable)),
+      by = key
+    )
+
+  tibble(
+    variable,
+    country_years_with_multiple_original_values = sum(compared$n_values > 1),
+    mismatches_when_original_value_is_unique = sum(
+      compared$n_values == 1 &
+        !(is.na(compared$original_value) & is.na(compared$copilot_value)) &
+        (is.na(compared$original_value) |
+          is.na(compared$copilot_value) |
+          compared$original_value != compared$copilot_value)
+    )
+  )
+}) |> bind_rows()
+
+kable(value_comparison, caption = "Shared-variable comparison across common country-years")
+```
+
+The mortality and covariate values match whenever `final_data` supplies one
+value for a country-year. Earthquake and drought can have multiple values in
+`final_data` for the same country-year; `final_data_copilot` instead stores one
+indicator for each disaster type.
+
+## Conclusion
+
+`final_data_copilot` is the appropriate dataset for a country-year analysis.
+It has a unique `iso`--`year` key, includes `armed_conflict`, and covers more
+country-years. `final_data` should not be used interchangeably because repeated
+event and disaster records inflate its row count.
