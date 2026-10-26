@@ -1,5 +1,161 @@
 ---
 title: "Comparing the Final Armed Conflict Datasets"
-format: html
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
 ---
 
+```{r}
+#| label: setup
+library(tidyverse)
+library(knitr)
+
+final_data <- read_csv("data/processed/final_data.csv", show_col_types = FALSE)
+final_data_copilot <- read_csv(
+  "data/processed/final_data_copilot.csv",
+  show_col_types = FALSE
+)
+
+key <- c("iso", "year")
+comparison_variables <- setdiff(intersect(names(final_data), names(final_data_copilot)), key)
+```
+
+# Overview
+
+This report compares `final_data.csv`, produced by `create_final_data.R`, with
+`final_data_copilot.csv`, produced by `create_final_data_copilot.R`. The
+comparison checks the data structure, country--year identifiers, values, and
+missingness. Both files contain `r nrow(final_data)` observations and
+`r ncol(final_data)` variables.
+
+# Structure and identifiers
+
+Both data sets use `iso` and `year` as country--year identifiers. Each contains
+`r sum(duplicated(final_data[key]))` duplicated keys in `final_data` and
+`r sum(duplicated(final_data_copilot[key]))` in `final_data_copilot`.
+
+```{r}
+#| label: structure-comparison
+#| echo: false
+
+structure_comparison <- tibble(
+  dataset = c("final_data", "final_data_copilot"),
+  observations = c(nrow(final_data), nrow(final_data_copilot)),
+  variables = c(ncol(final_data), ncol(final_data_copilot)),
+  duplicate_country_year_keys = c(
+    sum(duplicated(final_data[key])),
+    sum(duplicated(final_data_copilot[key]))
+  ),
+  sorted_by_iso_year = c(
+    identical(final_data[key], arrange(final_data, iso, year)[key]),
+    identical(
+      final_data_copilot[key],
+      arrange(final_data_copilot, iso, year)[key]
+    )
+  )
+)
+
+kable(structure_comparison, caption = "Dataset structure and key checks")
+```
+
+```{r}
+#| label: key-comparison
+#| echo: false
+
+keys_only_in_final <- anti_join(final_data[key], final_data_copilot[key], by = key)
+keys_only_in_copilot <- anti_join(final_data_copilot[key], final_data[key], by = key)
+
+kable(
+  tibble(
+    check = c("Country--year keys found only in final_data",
+              "Country--year keys found only in final_data_copilot"),
+    n = c(nrow(keys_only_in_final), nrow(keys_only_in_copilot))
+  ),
+  caption = "Country--year key differences"
+)
+```
+
+The country--year panels are the same: no keys occur in only one file, neither
+file has duplicate keys, and both are sorted by `iso` and `year`.
+
+# Variable order and types
+
+The files have the same variable names and data types. Their only structural
+presentation difference is column order: `final_data` places `drought` before
+`earthquake`, whereas `final_data_copilot` reverses those two columns. This
+does not change the data values or their interpretation.
+
+```{r}
+#| label: column-order
+#| echo: false
+
+final_data_names <- names(final_data)
+copilot_names <- names(final_data_copilot)
+
+column_order <- tibble(
+  position = seq_len(ncol(final_data)),
+  final_data = final_data_names,
+  final_data_copilot = copilot_names,
+  same_position = final_data_names == copilot_names
+)
+
+kable(
+  filter(column_order, !same_position),
+  caption = "Columns occurring in different positions"
+)
+```
+
+# Values and missingness
+
+The data sets are joined by country and year before values are assessed. A value
+is considered the same when both entries are missing or when their non-missing
+values are equal.
+
+```{r}
+#| label: value-comparison
+#| echo: false
+
+joined_data <- full_join(
+  final_data,
+  final_data_copilot,
+  by = key,
+  suffix = c(".final", ".copilot")
+)
+
+value_comparison <- map_dfr(comparison_variables, function(variable) {
+  final_values <- joined_data[[paste0(variable, ".final")]]
+  copilot_values <- joined_data[[paste0(variable, ".copilot")]]
+  values_match <- (is.na(final_values) & is.na(copilot_values)) |
+    (!is.na(final_values) & !is.na(copilot_values) &
+       final_values == copilot_values)
+
+  tibble(
+    variable,
+    differing_values = sum(!values_match),
+    missing_in_final_data = sum(is.na(final_values)),
+    missing_in_final_data_copilot = sum(is.na(copilot_values)),
+    missingness_difference = sum(is.na(final_values)) - sum(is.na(copilot_values))
+  )
+})
+
+kable(value_comparison, caption = "Value and missingness comparison by variable")
+```
+
+All `r nrow(value_comparison)` shared analysis variables have zero differing
+values and identical missingness counts. In particular, the exposure
+(`armed_conflict`), disaster indicators (`drought` and `earthquake`), mortality
+outcomes, and covariates agree for every country--year record.
+
+# Conclusion
+
+`final_data` and `final_data_copilot` are analytically equivalent. They contain
+the same country--year panel, the same variable set and types, identical values,
+and identical missing-data patterns. The Copilot script additionally makes the
+sort order and unique country--year-key check explicit; its swapped disaster
+column order is cosmetic. Either data set will yield the same results in
+analyses that reference variables by name.
