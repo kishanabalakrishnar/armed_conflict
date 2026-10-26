@@ -48,6 +48,11 @@ under5_mortality <- convert_wb_long(
   "under5_mortality"
 )
 
+# Prepare covariate data ---------------------------------------------------------
+
+# This file is already a country-year panel, so it only needs to be imported.
+covariates <- read_csv("data/raw/covariates.csv", show_col_types = FALSE)
+
 # Prepare disaster data ----------------------------------------------------------
 
 # One country can experience several disasters, including both types, in a year.
@@ -86,6 +91,7 @@ final_data_copilot <- conflict |>
   inner_join(maternal_mortality, by = c("iso", "year")) |>
   inner_join(neonatal_mortality, by = c("iso", "year")) |>
   inner_join(under5_mortality, by = c("iso", "year")) |>
+  inner_join(covariates, by = c("iso", "year")) |>
   arrange(iso, year)
 
 # This distinct check protects the intended one-row-per-country-year panel.
