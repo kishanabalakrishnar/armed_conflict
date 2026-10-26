@@ -94,6 +94,6 @@ final_data <- maternal_mortalitydflong |>
   left_join(covariates_df, by = c("iso", "year")) |> 
   mutate(armed_conflict = coalesce(armed_conflict, 0), 
 drought = coalesce(drought, 0), 
-earthquake = coalesce(earthquake, 0)) |> select(-)
+earthquake = coalesce(earthquake, 0)) |> select(-cumulative_conflict)
 
 write_csv(final_data, file = "data/processed/final_data.csv")
