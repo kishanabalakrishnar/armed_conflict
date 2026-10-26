@@ -13,7 +13,7 @@ library(janitor)
 
 ## Reading in the Data
 
-maternal_mortalitydf <- read_csv("data/raw/maternal_mortality.csv")
+maternal_mortalitydf <- read.csv("data/raw/maternal_mortality.csv")
 
 ## Converting the Maternal Mortality Data into a Long Format
 
@@ -80,6 +80,10 @@ cumulative_conflict < 25 ~ 0,
 TRUE ~ NA_real_))
 conflict_df <- conflict_df |> mutate(year = year + 1)
 
+# Reading the covariates dataset  -----------------------------------------------
+
+covariates_df <- read_csv("data/raw/covariates.csv")
+
 # Merge All Data and Save -------------------------------------------------------
 
 data_list <- list(
@@ -88,7 +92,8 @@ data_list <- list(
   infant_mortalitydflong,
   maternal_mortalitydflong,
   neonatal_mortalitydflong,
-  under5_mortalitydflong
+  under5_mortalitydflong,
+  covariates_df
 )
 
 final_data <- Reduce(function(x, y) merge(x, y, by = c("iso", "year")), data_list)
