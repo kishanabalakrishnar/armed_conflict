@@ -1,0 +1,243 @@
+---
+title: "Exploratory Data Analysis for Armed Conflict Data Set"
+format: html
+author: "Kishana Balakrishnar"
+---
+
+```{r}
+library(tidyverse)
+df <- read_csv("data/processed/final_data.csv")
+```
+
+# Purpose
+
+The purpose of this report is to gain a better sense of the variables that will be used for the armed conflict analysis. The report will summarize key statistics as well as explore frequencies and distributions of the variables of interest. 
+
+# Quick Sense of Data
+
+```{r}
+df |> head()
+df |> tail()
+df |> slice_sample(n=5)
+df |> glimpse()
+```
+
+# Distribution and Properties of the Individual Variables
+
+## Continuous Variables
+
+### Maternal Mortality
+```{r}
+summary(df$maternal_mortality)
+```
+
+The minimum value is 2 and the maximum value is 2480. The mean maternal mortality for the sample is 210.6, while the median is 66. The Q1 is 17.0 while the Q3 is 299.8. There are a total of 426 missing values for the maternal mortality variable.
+
+```{r}
+ggplot(df, aes(x = maternal_mortality)) + geom_histogram()
+```
+
+The distribution of the maternal mortality data is right-skewwed. This is indicated by most of the data falling on the left side and the long tail stretching towards the right side. 
+
+### Infant Mortality
+
+```{r}
+summary(df$infant_mortality)
+```
+
+The minimum and maximum values for infant mortality rate is 1.60 and 138.10, respectively. The first quartile is 7.60 and the third quartile is 44.52. The mean infant mortality rate is 28.90, while the median is 18.90. There are a total of 20 missing values for infant mortality rate. 
+
+
+```{r}
+ggplot(df, aes(x = infant_mortality)) + geom_histogram()
+```
+
+The distribution of infant mortality is right skewed, as highlighted by most of the values falling on the left side and distribution having a long right tail. 
+
+### Neonatal Mortality
+
+```{r}
+summary(df$neonatal_mortality)
+```
+
+The minimum neonatal mortality rate in the dataset is 0.80, whereas the maximum is 60.90. The first quartile is 4.90 and the third quartile is 25.32. The mean neonatal mortality rate is 16.18, while the median mortality rate is 12.10. There are a total of 20 missing values.  
+
+```{r}
+ggplot(df, aes(x = neonatal_mortality)) + geom_histogram()
+```
+
+The distribution of the neonatal mortality data is right skewed. This is indicated by majority of the values being on the left side and the data having a long right tail. 
+
+### Under-Five Mortality
+
+```{r}
+summary(df$under5_mortality)
+```
+
+The minimum under-five mortality rate is 2 while the maximum under-five mortality rate is 224.90. The first quartile is 9 and the third quartile is 61.33. The mean under-five mortality rate is 40.50, while the median under-five mortality rate is 22.20. There are a total of 20 missing values. 
+
+```{r}
+ggplot(df, aes(x = under5_mortality)) + geom_histogram()
+```
+
+The data is skewed to the right, as indicated by the long right tail and majority of the data being on the left side. 
+
+### GDP Per 1000
+
+```{r}
+summary(df$gdp_1000)
+```
+
+The minimum GDP per 1000 in this dataset is 0.1105, while the maximum is 123.6787. The first quartile is 1.2383 and the third quartile is 13.1531. The mean GDP per 1000 is 11.4917, while the median is 4.0719. There are a total of 62 missing values. 
+
+```{r}
+ggplot(df, aes(x = gdp_1000)) + geom_histogram()
+```
+
+Data is skewed to the right as indicated by the long right tail and most of the data being on the left side. 
+
+### Population Density
+
+```{r}
+summary(df$pop_dens)
+```
+
+The minimum population density is 0 while the maximum is 99.86. The first quartile is 14.79 and the third quartile is 40.72. The mean population density is 30.57, whereas the median is 27.52. There are 20 missing values. 
+
+```{r}
+ggplot(df, aes(x = pop_dens)) + geom_histogram()
+```
+
+The data is slightly skewed to the right, as indicated by the right tail. 
+
+### Urban Residence
+
+```{r}
+summary(df$urban)
+```
+
+For the urban residence variable, the minimum value is 0.1025 and the maximum value is 93.4135. The first quartile is 17.2872 and the third quartile is 41.6558. The mean and median of the variable are 30.6948 and 30.2535, respectively. There are 20 missing values. 
+
+```{r}
+ggplot(df, aes(x = urban)) + geom_histogram()
+```
+
+The distribution is slightly skewed to the right due to the stretched right tail. 
+
+### Age Dependency Ratio
+
+```{r}
+summary(df$age_dep)
+```
+
+The minimum and maximum age dependency ratio is 16.17 and 111.48, respectively. The first quartile is 47.94 and the third quartile is 77.11. The mean age dependency ratio is 61.94 while the median is 55.51. There are no missing values. 
+
+```{r}
+ggplot(df, aes(x = age_dep)) + geom_histogram()
+```
+
+The age dependency ratio has a bimodal distribution since there are two major peaks: one peak around 45-55 and the other around 80-90. 
+
+### Male Education
+
+```{r}
+summary(df$male_edu)
+```
+
+For male education, the minimum and maximum values are 1.067 and 14.441, respectively. The first quartile is 5.904 and the third quartile is 10.849. The mean male education is 8.258 while the median is 8.368. There are 20 missing values. 
+
+```{r}
+ggplot(df, aes(x = male_edu)) + geom_histogram()
+```
+
+Variable has a trimodal distribution since there are three peaks: smaller peak around 5-6, largest peak around 8-9, and another peak at 11-12.
+
+### Temperature
+
+```{r}
+summary(df$temp)
+```
+
+The minimum temperature recorded is -2.405 and the maximum is 29.676. The first quartile is 12.928 and the third quartile is 25.869. The mean temperature in this dataset is 19.625, while the median is 21.958. There are 20 missing values. 
+
+```{r}
+ggplot(df, aes(x = temp)) + geom_histogram()
+```
+
+The distribution of the temperature variable is left skewed, as indicated by the long left tail and most values being on the right side. 
+
+### Rainfall Per 1000
+
+```{r}
+summary(df$rainfall_1000)
+```
+
+The minimum rainfall per 1000 is 0.01993 whereas the maximum is 4.71081. The first quartile is 0.59146, while the third quartile is 1.68706. The mean rainfall per 1000 is 1.20216 while the median is 1.01288. There are a total of 20 missing values. 
+
+```{r}
+ggplot(df, aes(x = rainfall_1000)) + geom_histogram()
+```
+
+The distribution of the data is right skewed. This is because there is a long right tail and most of the data lies on the left side. 
+
+## Categorical Variables
+
+### Drought
+
+```{r}
+df |> group_by(factor(drought)) |> summarise(counts = n(),
+percent = counts / 3720*100)
+```
+
+In the dataset, 3395 country-years did not experience a drought (91.3%), while 325 country-years did experience a drought (8.74%). 
+
+```{r}
+ggplot(df, aes(x = drought)) + geom_bar()
+```
+
+Bar graph showcasing the counts of country-years that experienced a drought and those that did not experience a drought. 
+
+### Earthquake
+
+```{r}
+df |> group_by(factor(earthquake)) |> summarise(counts = n(),
+percent = counts / 3720*100)
+```
+
+In the dataset, 3410 country-years did not experience an earthquake (91.7%), while 310 country-years did experience a drought (8.33%). 
+
+```{r}
+ggplot(df, aes(x = earthquake)) + geom_bar()
+```
+
+Bar graph showcasing the counts of country-years that experienced an earthquake and those that did not experience an earthquake.
+
+### Armed Conflict
+
+```{r}
+df |> group_by(factor(armed_conflict)) |> summarise(counts = n(),
+percent = counts / 3720*100)
+```
+
+In the dataset, 3016 country-years did not experience conflict (81.1%), while 704 country-years did experience conflict (18.9%). 
+
+```{r}
+ggplot(df, aes(x = armed_conflict)) + geom_bar()
+```
+
+Bar graph showcasing the counts of country-years that experienced conflict and those that did not experience conflict.
+
+### OECD
+
+```{r}
+df |> group_by(factor(oecd)) |> summarise(counts = n(),
+percent = counts / 3720*100)
+```
+
+In the dataset, 3084 country-years are not OECD members (82.9%), while 636 country-years are OECD members (18.1%). 
+
+```{r}
+ggplot(df, aes(x = oecd)) + geom_bar()
+```
+
+Bar graph showcasing the counts of country-years that are and are not OECD members. 
