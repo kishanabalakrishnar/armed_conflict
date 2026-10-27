@@ -1,12 +1,18 @@
 ---
 title: "Exploratory Data Analysis for Armed Conflict Data Set"
-format: html
 author: "Kishana Balakrishnar"
+format: 
+  pdf:
+    geometry:
+      - top=30mm
+      - left=20mm
+      - heightrounded
 ---
 
 ```{r}
+#| include: false
 library(tidyverse)
-df <- read_csv("data/processed/final_data.csv")
+df <- read_csv("../data/processed/final_data.csv")
 ```
 
 # Purpose
