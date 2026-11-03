@@ -25,4 +25,4 @@ figure01 <- ggplot(conflict2, aes(x = year, y = maternal_mortality, color = iso)
 title = "Maternal Mortality Rate by Year\nfor Countries With an Increase From 2000-2017")
 
 # Saving Plot
-ggsave("figure01_maternal-linegraph.pdf", plot = figure01, width = 8, height = 5, path = "outputs")
+ggsave("figure01_maternal-linegraph.png", plot = figure01, width = 8, height = 5, path = "outputs")
