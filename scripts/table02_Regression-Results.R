@@ -35,7 +35,7 @@ underfive.1 <- plm(under5_mortality ~ armed_conflict + log_gdp + oecd + pop_dens
 index = c("iso", "year"), effect = "twoways", model = "within", data = finaldata)
 summary(underfive.1)
 
-# Generating Table 1
+# Generating Table 2
 labels <- c("Armed Conflictᵇ", "GDPᶜ", "OECD Member", "Population Densityᵈ", "Urban Residenceᵉ",
 "Age Dependency Ratioᶠ", "Male Educationᵍ", "Temperatureʰ", "Rainfallᶦ", "Earthquake", "Drought")
 dep_labels <- c("Maternal Mortalityᵃ", "Under-Five Mortalityᵃ", "Infant Mortalityᵃ", "Neonatal Mortalityᵃ")
