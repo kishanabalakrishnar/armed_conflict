@@ -68,8 +68,40 @@ notes.append = TRUE,
 add.lines = list(c("Countries", country_counts)),
 out = output_file)
 
+## Formatting Table
+table_html <- paste(readLines(output_file, warn = FALSE), collapse = "\n")
+# Remove Stargazer's in-table significance row; add it above the footnotes below.
+table_html <- sub(
+  '<tr><td style="text-align:left"><em>Note:</em></td><td colspan="4" style="text-align:(right|left)">.*?</tr>',
+  "",
+  table_html,
+  perl = TRUE
+)
+
+armed_pos <- regexpr("Armed Conflict", table_html, fixed = TRUE)[1]
+if (armed_pos < 0) stop("Could not find the Armed Conflict row in the Stargazer output.")
+
+after_armed <- substring(table_html, armed_pos)
+row_ends <- gregexpr("</tr>", after_armed, fixed = TRUE)[[1]]
+if (length(row_ends) < 3 || row_ends[1] < 0) {
+  stop("Could not locate the Armed Conflict estimate and confidence interval rows.")
+}
+insert_pos <- armed_pos + row_ends[3] + nchar("</tr>") - 1
+section_heading <- paste0(
+  "\n<tr><td colspan='5' style='text-align:left; font-weight:bold'>",
+  "Covariates</td></tr>"
+)
+table_html <- paste0(
+  substr(table_html, 1, insert_pos), section_heading,
+  substring(table_html, insert_pos + 1)
+)
+writeLines(table_html, output_file, useBytes = TRUE)
+
 cat(
-  "\n<div style='text-align:left; margin-top:0.5em'>", footnote, "</div>\n",
+  "\n<div style='text-align:left; margin-top:0.5em'>",
+  "<em>Note:</em> <sup>*</sup>p&lt;0.1; <sup>**</sup>p&lt;0.05; <sup>***</sup>p&lt;0.01<br>",
+  footnote,
+  "</div>\n",
   file = output_file,
   append = TRUE
 )
