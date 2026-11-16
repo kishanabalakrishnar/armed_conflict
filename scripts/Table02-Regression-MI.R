@@ -27,7 +27,7 @@ midata <- finaldata |>
   mutate(iso_num = as.numeric(as.factor(finaldata$iso))) |>
   select(-iso)
 
-mice0  <- mice(midata, seed = 100, m = 20, maxit = 0, print = FALSE)
+mice0  <- mice(midata, seed = 100, m = 10, maxit = 20, print = FALSE)
 
 meth <- mice0$method
 meth[c("urban", "male_edu", "temp", "rainfall_1000", "log_gdp", "pop_dens",
@@ -38,7 +38,7 @@ pred[c("urban", "male_edu", "temp", "rainfall_1000", "log_gdp", "pop_dens",
   "maternal_mortality", "infant_mortality", "neonatal_mortality",
   "under5_mortality"), "iso_num"] <- -2
 
-mice.multi.out  <- mice(midata, seed = 100, m = 20, maxit = 3,
+mice.multi.out  <- mice(midata, seed = 100, m = 10, maxit = 20,
                         method = meth,
                         predictorMatrix = pred)
 plot(mice.multi.out)
@@ -95,6 +95,20 @@ mi_to_texreg <- function(model) {
   )
 }
 
+footnote <- paste0(
+  "* p<0.05<br>",
+  "ᵃ Per 1000 live births<br>",
+  "ᵇ ≥25 battle-related deaths per country–conflict–year<br>",
+  "ᶜ USD per capita on log scale<br>",
+  "ᵈ Percentage of population living at a density of &gt;1000 people/km²<br>",
+  "ᵉ Percentage of people living in urban areas<br>",
+  "ᶠ Dependents (under 15 or over 64) per 100 working-age individuals<br>",
+  "ᵍ Age-standardised years per capita<br>",
+  "ʰ Mean population-weighted annual temperature in °C<br>",
+  "ᶦ Mean population-weighted annual rainfall in mm, scaled down by 1,000<br>",
+  "GDP, gross domestic product; OECD, Organization for Economic Co-operation and Development; MI, Multiple Imputation"
+)
+
 htmlreg(list(
   cc_to_texreg(maternal.1), mi_to_texreg(out.mi.matmor1),
   cc_to_texreg(neonatal.1), mi_to_texreg(out.mi.matmor2),
@@ -102,23 +116,24 @@ htmlreg(list(
   cc_to_texreg(underfive.1), mi_to_texreg(out.mi.matmor4)
 ),
   custom.header = list(
-    "Maternal Mortality" = 1:2,
-    "Neonatal Mortality" = 3:4,
-    "Infant Mortality" = 5:6,
-    "Under-5 Mortality" = 7:8
+    "Maternal Mortalityᵃ" = 1:2,
+    "Neonatal Mortalityᵃ" = 3:4,
+    "Infant Mortalityᵃ" = 5:6,
+    "Under-5 Mortalityᵃ" = 7:8
   ),
-  custom.model.names = rep(c("Complete Cases", "MI (n=20)"), 4),
+  custom.model.names = rep(c("Complete Cases", "MI (n=10)"), 4),
   custom.coef.map = list(
-    "armed_conflict" = "Armed Conflict",
-    "log_gdp" = "Log GDP per capita",
+    "armed_conflict" = "Armed Conflictᵇ",
+    "log_gdp" = "GDPᶜ",
     "oecd" = "OECD Member",
-    "pop_dens" = "Population Density",
-    "urban" = "Urban Residence",
-    "age_dep" = "Age Dependency Ratio",
-    "male_edu" = "Male Education",
-    "temp" = "Temperature",
-    "rainfall_1000" = "Rainfall",
+    "pop_dens" = "Population Densityᵈ",
+    "urban" = "Urban Residenceᵉ",
+    "age_dep" = "Age Dependency Ratioᶠ",
+    "male_edu" = "Male Educationᵍ",
+    "temp" = "Temperatureʰ",
+    "rainfall_1000" = "Rainfallᶦ",
     "earthquake" = "Earthquake",
     "drought" = "Drought"
   ),
+  custom.note = footnote,
   file = output_file)
