@@ -136,4 +136,6 @@ htmlreg(list(
     "drought" = "Drought"
   ),
   custom.note = footnote,
+  caption.above = TRUE,
+  caption = "Table 3. Results of Complete Case Analysis Versus Multiple Imputation (N=10)",
   file = output_file)
